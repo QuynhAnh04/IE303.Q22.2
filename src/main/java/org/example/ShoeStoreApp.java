@@ -1,5 +1,5 @@
 package org.example;
-// File: ShoeStoreApp.java (Bước 1)
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -26,11 +26,10 @@ public class ShoeStoreApp extends JFrame {
     }
 
     public ShoeStoreApp() {
-        setTitle("Shoe Store Interface - Step 1");
+        setTitle("Shoe Store Interface - Connected to SQLite");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1100, 650);
         setLocationRelativeTo(null);
-
         initData();
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -52,20 +51,13 @@ public class ShoeStoreApp extends JFrame {
         add(splitPane);
     }
 
+    // --- Lấy dữ liệu từ file ---
     private void initData() {
-        productList = new ArrayList<>();
-        productList.add(new Product("4DFWD PULSE SHOES", "$160.00", "Adidas", "This product is excluded from all promotional discounts.", "./img1.png"));
-        productList.add(new Product("FORUM MID SHOES", "$100.00", "Adidas", "This product is excluded.", "./img2.png"));
-        productList.add(new Product("SUPERNOVA SHOES", "$150.00", "Adidas", "NMD City Stock 2 series.", "./img3.png"));
-        productList.add(new Product("Adidas Originals", "$160.00", "Adidas", "NMD City Stock 2 classic look.", "./img4.png"));
-        productList.add(new Product("Adidas Dark Knight", "$120.00", "Adidas", "NMD City Stock 2 running shoes.", "./img5.png"));
-        productList.add(new Product("4DFWD PULSE ORANGE", "$160.00", "Adidas", "Special limited orange edition.", "./img6.png"));
-        productList.add(new Product("4DFWD PULSE SHOES", "$160.00", "Adidas", "This product is excluded from all promotional discounts.", "./img1.png"));
-        productList.add(new Product("FORUM MID SHOES", "$100.00", "Adidas", "This product is excluded.", "./img2.png"));
-        productList.add(new Product("SUPERNOVA SHOES", "$150.00", "Adidas", "NMD City Stock 2 series.", "./img3.png"));
-        productList.add(new Product("Adidas Originals", "$160.00", "Adidas", "NMD City Stock 2 classic look.", "./img4.png"));
-        productList.add(new Product("Adidas Dark Knight", "$120.00", "Adidas", "NMD City Stock 2 running shoes.", "./img5.png"));
-        productList.add(new Product("4DFWD PULSE ORANGE", "$160.00", "Adidas", "Special limited orange edition.", "./img6.png"));
+        productList = ProductDAO.getAllProducts();
+
+        if (productList.isEmpty()) {
+            System.out.println("Danh sách sản phẩm từ database đang rỗng!");
+        }
     }
 
     private void setupLeftPanel() {
@@ -115,6 +107,7 @@ public class ShoeStoreApp extends JFrame {
             lblLargeImage.setIcon(new ImageIcon(scaled));
         } else {
             lblLargeImage.setText("[ Big Image ]");
+            lblLargeImage.setIcon(null);
         }
     }
 
@@ -149,13 +142,9 @@ public class ShoeStoreApp extends JFrame {
                 int idealCardWidth = 180;
                 int gap = 15;
 
-                // Tính số lượng cột tối đa
                 int calculatedCols = (currentWidth + gap) / (idealCardWidth + gap);
-
-                // Đảm bảo có ít nhất 1 cột
                 if (calculatedCols < 1) calculatedCols = 1;
 
-                // Kiểm tra xem số cột
                 GridLayout layout = (GridLayout) gridCardPanel.getLayout();
                 if (layout.getColumns() != calculatedCols) {
                     layout.setColumns(calculatedCols);
@@ -196,7 +185,6 @@ public class ShoeStoreApp extends JFrame {
         card.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         card.setPreferredSize(new Dimension(180, 250));
 
-        // Tên sản phẩm
         JPanel topPanel = new JPanel(new GridLayout(2, 1, 2, 2));
         topPanel.setOpaque(false);
 
@@ -204,7 +192,6 @@ public class ShoeStoreApp extends JFrame {
         lblName.setFont(new Font("Arial", Font.BOLD, 14));
         lblName.setForeground(new Color(60, 60, 60));
 
-        // Dòng mô tả phụ
         String shortDesc = p.desc.length() > 28 ? p.desc.substring(0, 26) + "..." : p.desc;
         JLabel lblSub = new JLabel(shortDesc);
         lblSub.setFont(new Font("Arial", Font.PLAIN, 11));
@@ -213,7 +200,6 @@ public class ShoeStoreApp extends JFrame {
         topPanel.add(lblName);
         topPanel.add(lblSub);
 
-        // Ảnh
         JPanel imgWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER));
         imgWrapper.setOpaque(false);
 
@@ -227,7 +213,6 @@ public class ShoeStoreApp extends JFrame {
         }
         imgWrapper.add(lblImg);
 
-        // Thương hiệu & Giá
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setOpaque(false);
 
@@ -246,7 +231,6 @@ public class ShoeStoreApp extends JFrame {
         card.add(imgWrapper, BorderLayout.CENTER);
         card.add(bottomPanel, BorderLayout.SOUTH);
 
-        // Thêm tính năng
         card.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -266,7 +250,6 @@ public class ShoeStoreApp extends JFrame {
         return card;
     }
 
-    // Thêm hiệu ứng
     private void startFadeInAnimation(Product p) {
         if (fadeTimer != null && fadeTimer.isRunning()) fadeTimer.stop();
         alpha = 0.0f;
@@ -284,6 +267,7 @@ public class ShoeStoreApp extends JFrame {
     }
 
     public static void main(String[] args) {
+        ProductDAO.initDatabase();
         SwingUtilities.invokeLater(() -> {
             new ShoeStoreApp().setVisible(true);
         });
